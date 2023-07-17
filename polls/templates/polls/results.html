@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Result Page</title>
+        <meta name = "author" content = "Zhang">
+    </head>
+    
+
+<body>
+    <h1>{{question.question_text}}</h1>
+    <ul>
+        {% for qus in question.choice_set.all %}
+            <li>{{qus}} :  {{qus.votes}} vote{% if qus.votes > 1 %}s{% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href ="{% url 'polls:detail' question.id %}">Vote again?</a>
+</body>
