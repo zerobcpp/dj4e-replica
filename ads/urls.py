@@ -11,6 +11,7 @@ urlpatterns = [
         views.adsUpdateView.as_view(success_url=reverse_lazy('ads:all')), name='ads_update'),
     path('ads/<int:pk>/delete', 
         views.adsDeleteView.as_view(success_url=reverse_lazy('ads:all')), name='ads_delete'),
+    path('ads/files/<int:pk>', views.stream_file, name='ads_file'),
 ]
 
 # We use reverse_lazy in urls.py to delay looking up the view until all the paths are defined
