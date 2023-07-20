@@ -1,5 +1,6 @@
 {% extends "base_menu.html" %}
 {% load humanize %} <!-- https://docs.djangoproject.com/en/3.0/ref/contrib/humanize -->
+{% load crispy_forms_tags %}
 {% block content %}
 {% block head %}
 <style>
@@ -41,6 +42,32 @@
 Price: {{ad.price}}
 </p>
 <p>
+
+{% if user.is_authenticated %}
+<div>
+    <br>
+    <p>Comment Section</p>
+    <form action="{% url 'ads:ads_comments_create' 13 %}" method="post">
+        {% csrf_token %}
+        {{cform|crispy}}
+        <input type="submit" value="Submit">
+        <input type="submit" value="Cancel", onclick="window.location.href='{% url 'ads:all' %}'; return false;">
+
+    </form>
+</div>
+{% endif %}
+
+<div>
+{% for comment in comments %}
+<p> {{ comment.text }} 
+({{ comment.updated_at|naturaltime }})
+{% if user == comment.owner %}
+<a href="{% url 'ads:ads_comment_delete' comment.id %}"><i class="fa fa-trash"></i></a>
+
+{% endif %}
+{% endfor %}
+</div>
+
 <a href="{% url 'ads:all' %}">All ads</a>
 </p>
 {% endblock %}

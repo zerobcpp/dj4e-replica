@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse
 
-from ads.forms import CreateForm
-from ads.models import Ad
+from ads.forms import CreateForm, CommentForm
+from ads.models import Ad, Comment
 from ads.owner import OwnerListView, OwnerDetailView, OwnerCreateView, OwnerUpdateView, OwnerDeleteView
 
 
@@ -15,9 +15,14 @@ class adsListView(OwnerListView):
 
 
 class adsDetailView(OwnerDetailView):
-    model = Ad
-    fields = ['title', 'text', 'price', 'picture']
-
+    template = 'ads/Ad_detail.html'
+    def get(self, request, pk):
+        obj = Ad.objects.get(id=pk)
+        comments = Comment.objects.filter(ad=obj).order_by('-updated_at')
+        comment_form = CommentForm()
+        ctx = {'ad': obj, 'cform':comment_form, 'comments':comments}
+        return render(request, self.template, ctx)
+        
 
 
 class adsCreateView(OwnerCreateView):
@@ -74,10 +79,24 @@ class adsDeleteView(OwnerDeleteView):
 
 def stream_file(request, pk):
     ad = get_object_or_404(Ad, id=pk)
-    print(ad)
     response = HttpResponse()
     response['Content-Type'] = ad.content_type
     response['Content-Length'] = len(ad.picture)
     response.write(ad.picture)
     return response
 
+
+class CommentCreateView(OwnerCreateView):
+    def post(self, request, pk):
+            ad = get_object_or_404(Ad, id=pk)
+            comment = Comment(text=request.POST['comment'], owner=request.user, ad=ad)
+            comment.save()
+            return redirect(reverse('ads:ads_detail', args=[pk]))
+
+class CommentDeleteView(OwnerDeleteView):
+    model = Comment
+    template_name = 'comment\delete.html'
+    
+    def get_success_url(self) -> str:
+        id = self.object.ad.id
+        return reverse_lazy('ads:ads_detail', args=[id])
