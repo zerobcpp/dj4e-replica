@@ -1,18 +1,34 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse_lazy, reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.db import IntegrityError
+from django.views import View
 
 from ads.forms import CreateForm, CommentForm
-from ads.models import Ad, Comment
+from ads.models import Ad, Comment, Fav
 from ads.owner import OwnerListView, OwnerDetailView, OwnerCreateView, OwnerUpdateView, OwnerDeleteView
+
 
 
 class adsListView(OwnerListView):
     model = Ad
-    context_object_name = 'ads_list'
-    # By convention:
-    # template_name = "myarts/ads_list.html"
-
+    template_name = 'ads/Ad_list.html'
+    def get(self, request):
+        ads = Ad.objects.all()
+        favorites = []
+        if request.user.is_authenticated:
+            #attr = request.user.__dir__()
+            rows = request.user.Favorite_ads.values('id')
+            for r in rows:
+                favorites.append(r['id'])
+            
+        ctx = {'ads_list':ads, 'favorites':favorites}
+        return render(request, self.template_name, ctx)
+        
+        
 
 class adsDetailView(OwnerDetailView):
     template = 'ads/Ad_detail.html'
@@ -100,3 +116,31 @@ class CommentDeleteView(OwnerDeleteView):
     def get_success_url(self) -> str:
         id = self.object.ad.id
         return reverse_lazy('ads:ads_detail', args=[id])
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AddFavoriteView(LoginRequiredMixin, View):
+    def post(self, request, pk) :
+        print("Add PK",pk)
+        a = get_object_or_404(Ad, id=pk)
+        fav = Fav(user=request.user, ad = a)
+        try:
+            fav.save()  # In case of duplicate key
+        except IntegrityError as e:
+            print('Some key existed already')
+            pass
+        return JsonResponse({'favored': pk})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DeleteFavoriteView(LoginRequiredMixin, View):
+    def post(self, request, pk) :
+        print("Delete PK",pk)
+        ads = get_object_or_404(Ad, id=pk)
+        try:
+            fav = Fav.objects.get(user=request.user, ad = ads).delete()
+        except Fav.DoesNotExist as e:
+            pass
+
+        return JsonResponse({'unfavored': pk})
+
+    
+    
