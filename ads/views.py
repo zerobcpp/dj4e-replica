@@ -3,9 +3,11 @@ from django.urls import reverse_lazy, reverse
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
-from django.views import View
+from django.db.models import Q
+
 
 from ads.forms import CreateForm, CommentForm
 from ads.models import Ad, Comment, Fav
@@ -17,7 +19,14 @@ class adsListView(OwnerListView):
     model = Ad
     template_name = 'ads/Ad_list.html'
     def get(self, request):
-        ads = Ad.objects.all()
+        s_tag = request.GET.get('search', None)
+        if s_tag:
+            query = Q(title__icontains=s_tag)
+            query.add(Q(text__icontains=s_tag), Q.OR)
+            query.add(Q(tags__name__in=[s_tag]), Q.OR)
+            ads = Ad.objects.filter(query).select_related().distinct().order_by('-updated_at')[:10]
+        else:
+            ads = Ad.objects.all().order_by('-create_at')
         favorites = []
         if request.user.is_authenticated:
             #attr = request.user.__dir__()
@@ -34,6 +43,7 @@ class adsDetailView(OwnerDetailView):
     template = 'ads/Ad_detail.html'
     def get(self, request, pk):
         obj = Ad.objects.get(id=pk)
+
         comments = Comment.objects.filter(ad=obj).order_by('-updated_at')
         comment_form = CommentForm()
         ctx = {'ad': obj, 'cform':comment_form, 'comments':comments}
@@ -42,8 +52,6 @@ class adsDetailView(OwnerDetailView):
 
 
 class adsCreateView(OwnerCreateView):
-    model = Ad
-    fields = ['title', 'text', 'price', 'picture']
     success_url = reverse_lazy('pics:all')
     template_name = 'ads/Ad_form.html'
     def get(self, request, pk=None):
@@ -62,12 +70,11 @@ class adsCreateView(OwnerCreateView):
         pic = form.save(commit=False)
         pic.owner = self.request.user
         pic.save()
+        form.save_m2m()
         return redirect(self.success_url)
 
 
 class adsUpdateView(OwnerUpdateView):
-    model = Ad
-    fields = ['title', 'text', 'price', 'picture']
     success_url = reverse_lazy('pics:all')
     template_name = 'ads/Ad_form.html'
     def get(self, request, pk):
@@ -86,7 +93,7 @@ class adsUpdateView(OwnerUpdateView):
 
         pic = form.save(commit=False)
         pic.save()
-
+        form.save_m2m()
         return redirect(self.success_url)
 
 

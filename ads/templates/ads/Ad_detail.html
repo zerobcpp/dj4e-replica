@@ -42,7 +42,15 @@
 Price: {{ad.price}}
 </p>
 <p>
-
+{% if ad.tags.all %}
+<div id = "Tag-block">
+    <p> Tags:
+    {% for t in ad.tags.all  %}
+        <span style="border:1px grey solid; background-color: LightGreen;">{{ t }}</span>
+    {% endfor %}
+    </p>
+</div>
+{% endif %}
 {% if user.is_authenticated %}
 <div>
     <br>
@@ -59,7 +67,7 @@ Price: {{ad.price}}
 
 <div>
 {% for comment in comments %}
-<p> {{ comment.text }} 
+<p> {{ comment.text }} </p>
 ({{ comment.updated_at|naturaltime }})
 {% if user == comment.owner %}
 <a href="{% url 'ads:ads_comment_delete' comment.id %}"><i class="fa fa-trash"></i></a>
@@ -69,5 +77,5 @@ Price: {{ad.price}}
 </div>
 
 <a href="{% url 'ads:all' %}">All ads</a>
-</p>
+
 {% endblock %}

@@ -18,7 +18,7 @@ class CreateForm(forms.ModelForm):
     # Hint: this will need to be changed for use in the ads application :)
     class Meta:
         model = Ad
-        fields = ['title', 'text', 'price', 'picture'] 
+        fields = ['title', 'text', 'price', 'picture', 'tags'] 
     # Validate the size of the picture
     def clean(self):
         cleaned_data = super().clean()
@@ -41,6 +41,7 @@ class CreateForm(forms.ModelForm):
 
         if commit:
             instance.save()
+            self.save_m2m()
 
         return instance
     

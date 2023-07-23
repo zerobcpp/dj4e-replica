@@ -1,12 +1,21 @@
 {% extends "base_menu.html" %}
 {% block content %}
 <h1>ads</h1>
+<div style="float: right">
+<form action="#">
+  <input type="text" name="search" placeholder="Search tags" 
+  {% if search %} value="{{ search }}" {% endif %}>
+
+  <button type="submit"><i class="fa fa-search"></i></button>
+  <a href="{% url 'ads:all' %}"><i class="fa fa-undo"></i></a>
+</form>
+</div>
 <p>
 {% if ads_list %}
 <ul>
   {% for ad in ads_list %}
     <li>
-        <a href="{% url 'ads:ads_detail'  ad.id %}">{{ ad.title }}</a>
+        <a href="{% url 'ads:ads_detail'  ad.id %}">{{ ad.title }} </a> <span> - {{ad.updated_at|timesince}} ago </span>
         {% if ad.owner == user %}
         (<a href="{% url 'ads:ads_update' ad.id %}">Edit</a> |
         <a href="{% url 'ads:ads_delete' ad.id %}">Delete</a>)
@@ -27,7 +36,7 @@
         <!-- the second href -->
         <a href="#" onclick=
              "favPost('{% url 'ads:fav_favorite' ad.id %}', {{ ad.id }} );return false;"
-            {% if ad.id in favorites %d} 
+            {% if ad.id in favorites %} 
             style="display: none;" 
             {% endif %}
             id="unfavorite_star_{{ad.id}}">
