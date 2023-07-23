@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'taggit',
     'home.apps.HomeConfig',  
     'ads.apps.AdsConfig',
-
+    'app32.apps.App32Config',
     # Sample Applications - don't copy
     
 ]

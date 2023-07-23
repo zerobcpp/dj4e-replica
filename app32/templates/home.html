@@ -1,0 +1,22 @@
+
+{% load crispy_forms_tags %}
+{% block content %}
+{% if user.is_authenticated %}
+<h1> Welcome to Homework TimeCode_7620 </h1>
+{% if x %}
+<p> Your result is <span>{{y}} {{x}}</span> </p>
+{% endif %}
+<form action="" method="post">
+    {% csrf_token %}
+    <label for="field1">Field1</label>
+    <input type="text" name="field1" >
+    <br>
+    <br>
+    <label for="field2">Field2</label>
+    <input type="text" name="field2" >
+    <br>
+    <br>
+    <input type="submit" value="Submit">
+</form>
+{% endif %}
+{% endblock content %}
