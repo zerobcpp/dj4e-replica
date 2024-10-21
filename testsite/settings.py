@@ -12,15 +12,20 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
-#BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #os.chdir('..')
-BASE_DIR = os.path.abspath(os.curdir)
-print(BASE_DIR)
+#BASE_DIR = os.path.abspath(os.curdir)
+print(f'Current Directory: {BASE_DIR}')
 # Used for a default title
 APP_NAME = 'Test_List'   # Add
-0
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -47,14 +52,21 @@ INSTALLED_APPS = [
     'django_extensions', 
     'crispy_forms',  
     'crispy_bootstrap5',
-    'rest_framework', 
+    'rest_framework',
+    'rest_framework.authtoken',
     'social_django',  
     'taggit',
+    "corsheaders",
+    # Sample Applications - don't copy
     'home.apps.HomeConfig',  
     'ads.apps.AdsConfig',
     'app32.apps.App32Config',
-    # Sample Applications - don't copy
-    
+    'api',
+    'api.category',
+    'api.product',
+    'api.user',
+    'api.order',
+    'api.payment', 
 ]
 
 # When we get to crispy forms :)
@@ -73,7 +85,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',   # Add
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'testsite.urls'
@@ -104,14 +117,18 @@ WSGI_APPLICATION = 'testsite.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default':{
-        'ENGINE': 'mssql',
-        'NAME': "Django",
-        "HOST": "127.0.0.1",
-        "PORT": "1433",
-        "USER": "SA",
-        "PASSWORD": "root"
-    }
+    'default': {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR + '/' + 'db.sqlite3',
+    }, 
+    # 'default':{  
+    #     'ENGINE': 'mssql',
+    #     'NAME': "Django",
+    #     "HOST": "127.0.0.1",
+    #     "PORT": "1433",
+    #     "USER": "SA",
+    #     "PASSWORD": "root"
+    # }
     
 }
 
@@ -151,8 +168,20 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",
+    "https://sub.example.com",
+    "https://localhost:8080",
+    "https://127.0.0.1:9000",
+    "https://127.0.0.1:5173", 
+    "http://localhost:5173",
+]
 
 STATIC_URL = '/static/'
+MEDIA_URL = BASE_DIR + '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
+AUTH_USER_MODEL = 'user.CustomUser'
+
 INTERNAL_IPS = ['127.0.0.1',]
 
 # Add the settings below
@@ -161,7 +190,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    )
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
 }
 
 # Configure the social login
@@ -181,6 +214,13 @@ AUTHENTICATION_BACKENDS = (
 
     'django.contrib.auth.backends.ModelBackend',
 )
+# CORS
+
+# BrainTree Keys
+SETTING_BT_merchant_id=os.environ.get('merchant_id')
+SETTING_BT_public_key=os.environ.get('public_key')
+SETTING_BT_private_key=os.environ.get('private_key')
+
 
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/'

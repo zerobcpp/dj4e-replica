@@ -19,6 +19,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.views.static import serve
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', include('home.urls')),  # Change to ads.urls
@@ -26,9 +27,10 @@ urlpatterns = [
     path("__debug__/", include("debug_toolbar.urls")), # KEEP DEBUG
     path('accounts/', include('django.contrib.auth.urls')),  # Keep
     re_path(r'^oauth/', include('social_django.urls', namespace='social')),  # Keep
+    path('api-auth/', include('rest_framework.urls')),
     path('ads/', include('ads.urls')),
     path('app32/', include('app32.urls')),
-    
+    path('api/', include('api.urls'))
     # Sample applications
 
 ]
@@ -51,6 +53,8 @@ urlpatterns += [
         }
     ),
 ]
+
+urlpatterns += (static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT))
 
 # Switch to social login if it is configured - Keep for later
 try:

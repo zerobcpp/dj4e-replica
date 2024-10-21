@@ -55,7 +55,7 @@ Price: {{ad.price}}
 <div>
     <br>
     <p>Comment Section</p>
-    <form action="{% url 'ads:ads_comments_create' 13 %}" method="post">
+    <form action="{% url 'ads:ads_comments_create' %}" method="post">
         {% csrf_token %}
         {{cform|crispy}}
         <input type="submit" value="Submit">
